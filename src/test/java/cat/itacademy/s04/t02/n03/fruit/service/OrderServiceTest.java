@@ -4,6 +4,7 @@ import cat.itacademy.s04.t02.n03.fruit.dto.OrderCreateRequest;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemRequest;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemResponse;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderResponse;
+import cat.itacademy.s04.t02.n03.fruit.exception.BadRequestException;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,5 +74,84 @@ class OrderServiceTest {
         assertEquals("abc123", response.id());
         verify(orderRepository).save(toSave);
     }
+
+    @Test
+    void createOrder_shouldThrow_whenClientNameIsBlank() {
+
+        OrderCreateRequest request = new OrderCreateRequest(
+                "",
+                LocalDate.now().plusDays(1),
+                List.of(new OrderItemRequest("Apple", 5))
+        );
+
+        when(orderMapper.toEntity(request)).thenThrow(new BadRequestException("Client name cannot be empty"));
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void createOrder_shouldThrow_whenDeliveryDateIsBeforeTomorrow() {
+
+        OrderCreateRequest request = new OrderCreateRequest(
+                "Alice",
+                LocalDate.now(),
+                List.of(new OrderItemRequest("Apple", 5))
+        );
+
+        when(orderMapper.toEntity(request)).thenThrow(
+                new BadRequestException("Delivery date must be at least tomorrow")
+        );
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void createOrder_shouldThrow_whenItemsListIsEmpty() {
+
+        OrderCreateRequest request = new OrderCreateRequest(
+                "Alice",
+                LocalDate.now().plusDays(1),
+                List.of()
+        );
+
+        when(orderMapper.toEntity(request)).thenThrow(
+                new BadRequestException("At least one item is required")
+        );
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void createOrder_shouldThrow_whenItemFruitNameIsBlank() {
+
+        OrderCreateRequest request = new OrderCreateRequest(
+                "Alice",
+                LocalDate.now().plusDays(1),
+                List.of(new OrderItemRequest("", 5))
+        );
+
+        when(orderMapper.toEntity(request)).thenThrow(
+                new BadRequestException("Fruit name is required")
+        );
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void createOrder_shouldThrow_whenItemQuantityIsInvalid() {
+
+        OrderCreateRequest request = new OrderCreateRequest(
+                "Alice",
+                LocalDate.now().plusDays(1),
+                List.of(new OrderItemRequest("Apple", 0))
+        );
+
+        when(orderMapper.toEntity(request)).thenThrow(
+                new BadRequestException("Quantity must be > 0")
+        );
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
 }
 
