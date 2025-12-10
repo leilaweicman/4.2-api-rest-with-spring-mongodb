@@ -21,5 +21,11 @@ public class Order {
     private String clientName;
     private LocalDate deliveryDate;
     private List<OrderItem> items;
+
+    public Order(String clientName, LocalDate deliveryDate, List<OrderItem> items) {
+        this.clientName = clientName;
+        this.deliveryDate = deliveryDate;
+        this.items = items;
+    }
 }
 
