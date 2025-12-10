@@ -6,7 +6,7 @@ public record OrderItemRequest(
         @NotBlank(message = "Fruit name is required")
         String fruitName,
 
-        @Positive(message = "Quantity must be greater than 0")
+        @Positive(message = "Quantity must be > 0")
         Integer quantityInKilos
 ) {}
 
