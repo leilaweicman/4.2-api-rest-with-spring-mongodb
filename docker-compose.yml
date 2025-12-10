@@ -1,0 +1,11 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: fruit-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: fruit_orders_db
+    volumes:
+      - ./mongo-data:/data/db

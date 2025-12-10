@@ -32,8 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
-# Local MongoDB volume
-mongo-data/
+# MongoDB local volume
+mongo-data/*
+!mongo-data/.gitkeep
 
 # Maven logs
 mvnw.*
