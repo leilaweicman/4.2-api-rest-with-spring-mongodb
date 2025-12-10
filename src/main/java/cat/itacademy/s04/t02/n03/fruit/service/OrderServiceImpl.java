@@ -6,6 +6,7 @@ import cat.itacademy.s04.t02.n03.fruit.dto.OrderResponse;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
+import cat.itacademy.s04.t02.n03.fruit.service.mapper.OrderMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,36 +15,19 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderMapper mapper;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper mapper) {
         this.orderRepository = orderRepository;
+        this.mapper = mapper;
     }
 
     @Override
     public OrderResponse createOrder(OrderCreateRequest request) {
+        Order order = mapper.toEntity(request);
+        Order saved = orderRepository.save(order);
 
-        List<OrderItem> items = request.items().stream()
-                .map(i -> new OrderItem(i.fruitName(), i.quantityInKilos()))
-                .toList();
-
-        Order orderToSave = new Order(
-                request.clientName(),
-                request.deliveryDate(),
-                items
-        );
-
-        Order saved = orderRepository.save(orderToSave);
-
-        List<OrderItemResponse> itemResponses = saved.getItems().stream()
-                .map(i -> new OrderItemResponse(i.getFruitName(), i.getQuantityInKilos()))
-                .toList();
-
-        return new OrderResponse(
-                saved.getId(),
-                saved.getClientName(),
-                saved.getDeliveryDate(),
-                itemResponses
-        );
+        return mapper.toResponse(saved);
     }
 }
 
