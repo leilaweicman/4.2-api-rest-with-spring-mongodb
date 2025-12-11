@@ -36,4 +36,9 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderResponse> updateOrder(@PathVariable String id, @Valid @RequestBody OrderCreateRequest request) {
+        return ResponseEntity.ok(orderService.updateOrder(id, request));
+    }
+
 }
