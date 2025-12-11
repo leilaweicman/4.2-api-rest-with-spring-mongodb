@@ -5,6 +5,7 @@ import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemRequest;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemResponse;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderResponse;
 import cat.itacademy.s04.t02.n03.fruit.exception.BadRequestException;
+import cat.itacademy.s04.t02.n03.fruit.exception.NotFoundException;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -193,6 +195,40 @@ class OrderServiceTest {
         assertEquals("Anna", result.get(1).clientName());
 
         verify(orderRepository).findAll();
+    }
+
+    @Test
+    void getOrderById_shouldReturnOrder_whenExists() {
+        String id = "123";
+
+        Order order = new Order(id, "John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(order));
+
+        OrderResponse expected = new OrderResponse(id, "John", order.getDeliveryDate(),
+                List.of(new OrderItemResponse("Apple", 2)));
+
+        when(orderMapper.toResponse(order)).thenReturn(expected);
+
+        OrderResponse result = orderService.getOrderById(id);
+
+        assertEquals("John", result.clientName());
+        assertEquals("Apple", result.items().get(0).fruitName());
+
+        verify(orderRepository).findById(id);
+        verify(orderMapper).toResponse(order);
+    }
+
+    @Test
+    void getOrderById_shouldThrowNotFound_whenOrderDoesNotExist() {
+        String id = "not-found-id";
+
+        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> orderService.getOrderById(id));
+
+        verify(orderRepository).findById(id);
     }
 
 }
