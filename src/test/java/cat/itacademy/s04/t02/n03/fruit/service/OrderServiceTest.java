@@ -18,11 +18,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -151,6 +154,36 @@ class OrderServiceTest {
         );
 
         assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void getAllOrders_shouldReturnEmptyList_whenNoOrdersExist() {
+        when(orderRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<OrderResponse> result = orderService.getAllOrders();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(orderRepository).findAll();
+    }
+
+    @Test
+    void getAllOrders_shouldReturnListOfOrders_whenOrdersExist() {
+        Order order1 = new Order("1","John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+
+        Order order2 = new Order("2", "Anna", LocalDate.now().plusDays(2),
+                List.of(new OrderItem("Banana", 3)));
+
+        when(orderRepository.findAll()).thenReturn(List.of(order1, order2));
+
+        List<OrderResponse> result = orderService.getAllOrders();
+
+        assertEquals(2, result.size());
+        assertEquals("John", result.get(0).clientName());
+        assertEquals("Anna", result.get(1).clientName());
+
+        verify(orderRepository).findAll();
     }
 
 }
