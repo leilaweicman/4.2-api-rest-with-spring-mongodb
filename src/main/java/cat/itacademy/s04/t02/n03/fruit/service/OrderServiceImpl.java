@@ -1,15 +1,13 @@
 package cat.itacademy.s04.t02.n03.fruit.service;
 
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderCreateRequest;
-import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemResponse;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderResponse;
+import cat.itacademy.s04.t02.n03.fruit.exception.NotFoundException;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
-import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
 import cat.itacademy.s04.t02.n03.fruit.service.mapper.OrderMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,6 +32,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll().stream().map(mapper::toResponse).toList();
+    }
+
+    @Override
+    public OrderResponse getOrderById(String id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        return mapper.toResponse(order);
     }
 
 }
