@@ -1,5 +1,8 @@
 package cat.itacademy.s04.t02.n03.fruit.integration;
 
+import cat.itacademy.s04.t02.n03.fruit.model.Order;
+import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
+import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -8,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -20,6 +24,8 @@ class OrderIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private OrderRepository orderRepository;
     @Test
     void createOrder_returnsCreated_AndSavedOrder() throws Exception {
 
@@ -103,7 +109,7 @@ class OrderIntegrationTest {
     }
 
     @Test
-    void createOrder_shouldReturn400_whenQuantityInvalid() throws Exception {
+    void createOrder_returnsBadRequest_whenQuantityInvalid() throws Exception {
 
         String body = """
             {
@@ -121,6 +127,33 @@ class OrderIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Quantity must be > 0"));
     }
+
+    @Test
+    void getAllOrders_returnsEmptyList_whenNoOrdersExist() throws Exception {
+        mockMvc.perform(get("/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getAllOrders_returnsListOfOrders_whenOrdersExist() throws Exception {
+
+        Order order1 = new Order("John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+        orderRepository.save(order1);
+
+        Order order2 = new Order("Anna", LocalDate.now().plusDays(2),
+                List.of(new OrderItem("Banana", 3)));
+        orderRepository.save(order2);
+
+        mockMvc.perform(get("/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].clientName").value("John"))
+                .andExpect(jsonPath("$[1].clientName").value("Anna"));
+    }
+
 
 }
 
