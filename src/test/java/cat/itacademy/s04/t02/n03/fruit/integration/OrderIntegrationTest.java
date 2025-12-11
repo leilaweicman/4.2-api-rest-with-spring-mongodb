@@ -1,7 +1,5 @@
 package cat.itacademy.s04.t02.n03.fruit.integration;
 
-import cat.itacademy.s04.t02.n03.fruit.dto.OrderCreateRequest;
-import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemRequest;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
@@ -16,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -229,5 +228,24 @@ class OrderIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void deleteOrder_returnsNoContent_whenIdExists() throws Exception {
+
+        Order existing = new Order("John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+        existing = orderRepository.save(existing);
+
+        mockMvc.perform(delete("/orders/" + existing.getId()))
+                .andExpect(status().isNoContent());
+        assertTrue(orderRepository.findById(existing.getId()).isEmpty());
+
+    }
+
+    @Test
+    void deleteOrder_returnsNotFound_whenIdDoesNotExist() throws Exception {
+
+        mockMvc.perform(delete("/orders/unknown-id"))
+                .andExpect(status().isNotFound());
+    }
 }
 
