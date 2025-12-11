@@ -9,6 +9,7 @@ import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
 import cat.itacademy.s04.t02.n03.fruit.service.mapper.OrderMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,5 +30,11 @@ public class OrderServiceImpl implements OrderService {
 
         return mapper.toResponse(saved);
     }
+
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll().stream().map(mapper::toResponse).toList();
+    }
+
 }
 
