@@ -9,4 +9,5 @@ public interface OrderService {
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String id);
     OrderResponse updateOrder(String id, OrderCreateRequest request);
+    void deleteOrder(String id);
 }

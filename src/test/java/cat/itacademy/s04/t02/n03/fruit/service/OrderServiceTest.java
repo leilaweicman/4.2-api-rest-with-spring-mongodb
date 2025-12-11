@@ -1,4 +1,4 @@
-package cat.itacademy.s04.t02.n03.fruit.services;
+package cat.itacademy.s04.t02.n03.fruit.service;
 
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderCreateRequest;
 import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemRequest;
@@ -9,8 +9,6 @@ import cat.itacademy.s04.t02.n03.fruit.exception.NotFoundException;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
-import cat.itacademy.s04.t02.n03.fruit.service.OrderService;
-import cat.itacademy.s04.t02.n03.fruit.service.OrderServiceImpl;
 import cat.itacademy.s04.t02.n03.fruit.service.mapper.OrderMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -272,6 +269,30 @@ class OrderServiceTest {
         verify(orderRepository).findById(id);
     }
 
+    @Test
+    void deleteOrder_shouldDelete_whenIdExists() {
+        String id = "123";
+
+        Order existing = new Order(id, "John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(existing));
+
+        orderService.deleteOrder(id);
+
+        verify(orderRepository).delete(existing);
+    }
+
+    @Test
+    void deleteOrder_shouldThrowNotFound_whenIdDoesNotExist() {
+        String id = "not-found";
+
+        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> orderService.deleteOrder(id));
+
+        verify(orderRepository).findById(id);
+    }
 
 }
 

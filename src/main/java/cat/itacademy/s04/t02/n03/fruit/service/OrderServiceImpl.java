@@ -62,5 +62,10 @@ public class OrderServiceImpl implements OrderService {
         return mapper.toResponse(saved);
     }
 
+    @Override
+    public void deleteOrder(String id) {
+
+    }
+
 }
 
