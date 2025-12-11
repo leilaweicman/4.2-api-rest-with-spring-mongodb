@@ -1,5 +1,7 @@
 package cat.itacademy.s04.t02.n03.fruit.integration;
 
+import cat.itacademy.s04.t02.n03.fruit.dto.OrderCreateRequest;
+import cat.itacademy.s04.t02.n03.fruit.dto.OrderItemRequest;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
@@ -180,6 +182,51 @@ class OrderIntegrationTest {
         mockMvc.perform(get("/orders/unknown-id-123"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void updateOrder_returnsUpdatedOrder_whenIdExists() throws Exception {
+
+        Order existing = new Order("John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+        existing = orderRepository.save(existing);
+
+        String json = """
+            {
+              "clientName": "Updated Client",
+              "deliveryDate": "%s",
+              "items": [
+                {"fruitName": "Orange", "quantityInKilos": 5}
+              ]
+            }
+            """.formatted(LocalDate.now().plusDays(2));
+
+        mockMvc.perform(put("/orders/" + existing.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.clientName").value("Updated Client"))
+                .andExpect(jsonPath("$.items[0].fruitName").value("Orange"))
+                .andExpect(jsonPath("$.items[0].quantityInKilos").value(5));
+    }
+
+    @Test
+    void updateOrder_returnsNotFound_whenIdNotExists() throws Exception {
+
+        String json = """
+            {
+              "clientName": "Client",
+              "deliveryDate": "%s",
+              "items": [
+                {"fruitName": "Banana", "quantityInKilos": 2}
+              ]
+            }
+            """.formatted(LocalDate.now().plusDays(1));
+
+        mockMvc.perform(put("/orders/unknown-id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
     }
 
 }
