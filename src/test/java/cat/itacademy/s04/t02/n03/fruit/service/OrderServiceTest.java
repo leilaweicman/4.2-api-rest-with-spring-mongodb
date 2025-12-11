@@ -169,13 +169,22 @@ class OrderServiceTest {
 
     @Test
     void getAllOrders_shouldReturnListOfOrders_whenOrdersExist() {
-        Order order1 = new Order("1","John", LocalDate.now().plusDays(1),
-                List.of(new OrderItem("Apple", 2)));
+        LocalDate d1 = LocalDate.now().plusDays(1);
+        LocalDate d2 = LocalDate.now().plusDays(2);
 
-        Order order2 = new Order("2", "Anna", LocalDate.now().plusDays(2),
-                List.of(new OrderItem("Banana", 3)));
+        Order order1 = new Order("1","John", d1, List.of(new OrderItem("Apple", 2)));
+
+        Order order2 = new Order("2", "Anna", d2, List.of(new OrderItem("Banana", 3)));
 
         when(orderRepository.findAll()).thenReturn(List.of(order1, order2));
+
+        when(orderMapper.toResponse(order1)).thenReturn(
+                new OrderResponse("1", "John", d1, List.of(new OrderItemResponse("Apple", 2)))
+        );
+
+        when(orderMapper.toResponse(order2)).thenReturn(
+                new OrderResponse("2", "Anna", d2, List.of(new OrderItemResponse("Banana", 3)))
+        );
 
         List<OrderResponse> result = orderService.getAllOrders();
 
