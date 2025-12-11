@@ -161,6 +161,26 @@ class OrderIntegrationTest {
                 .andExpect(jsonPath("$[1].clientName").value("Anna"));
     }
 
+    @Test
+    void getOrderById_returnsOrder_whenIdExists() throws Exception {
+        Order order = new Order("John", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+        order = orderRepository.save(order);
+
+        mockMvc.perform(get("/orders/" + order.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(order.getId()))
+                .andExpect(jsonPath("$.clientName").value("John"))
+                .andExpect(jsonPath("$.items[0].fruitName").value("Apple"))
+                .andExpect(jsonPath("$.items[0].quantityInKilos").value(2));
+    }
+
+    @Test
+    void getOrderById_returnsNotFound_whenIdNotExists() throws Exception {
+        mockMvc.perform(get("/orders/unknown-id-123"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
 
 }
 
