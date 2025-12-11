@@ -8,4 +8,5 @@ public interface OrderService {
     OrderResponse createOrder(OrderCreateRequest request);
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String id);
+    OrderResponse updateOrder(String id, OrderCreateRequest request);
 }

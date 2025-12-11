@@ -231,5 +231,47 @@ class OrderServiceTest {
         verify(orderRepository).findById(id);
     }
 
+    @Test
+    void updateOrder_shouldReturnUpdatedOrder_whenIdExists() {
+        String id = "123";
+        LocalDate newDate = LocalDate.now().plusDays(3);
+
+        OrderCreateRequest request = new OrderCreateRequest("Updated Client", newDate,
+                List.of(new OrderItemRequest("Orange", 5)));
+
+        Order existing = new Order(id, "Old Client", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Apple", 2)));
+
+        Order updated = new Order(id, request.clientName(), request.deliveryDate(),
+                List.of(new OrderItem("Orange", 5)));
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(existing));
+        when(orderRepository.save(any(Order.class))).thenReturn(updated);
+
+        OrderResponse expected = new OrderResponse(id, "Updated Client", newDate,
+                List.of(new OrderItemResponse("Orange", 5)));
+
+        when(orderMapper.toResponse(updated)).thenReturn(expected);
+
+        OrderResponse result = orderService.updateOrder(id, request);
+
+        assertEquals("Updated Client", result.clientName());
+        assertEquals("Orange", result.items().get(0).fruitName());
+    }
+
+    @Test
+    void updateOrder_shouldThrowNotFound_whenIdDoesNotExist() {
+        String id = "not-found";
+        OrderCreateRequest request = new OrderCreateRequest("Client", LocalDate.now().plusDays(1),
+                List.of(new OrderItemRequest("Apple", 2)));
+
+        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> orderService.updateOrder(id, request));
+
+        verify(orderRepository).findById(id);
+    }
+
+
 }
 
