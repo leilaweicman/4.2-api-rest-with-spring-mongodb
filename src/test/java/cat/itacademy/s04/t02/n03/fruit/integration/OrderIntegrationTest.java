@@ -3,6 +3,7 @@ package cat.itacademy.s04.t02.n03.fruit.integration;
 import cat.itacademy.s04.t02.n03.fruit.model.Order;
 import cat.itacademy.s04.t02.n03.fruit.model.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.repository.OrderRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +27,12 @@ class OrderIntegrationTest {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @BeforeEach
+    void cleanDb() {
+        orderRepository.deleteAll();
+    }
+
     @Test
     void createOrder_returnsCreated_AndSavedOrder() throws Exception {
 
